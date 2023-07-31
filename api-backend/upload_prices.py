@@ -39,9 +39,16 @@ def upload_prices(credentials: Credentials, data: pd.DataFrame):
             f"{API}/product-prices", headers=headers, json=json_object
         )
         response.raise_for_status()
-    upload_url = requests.get(f"{API}/validate-product-prices", headers=headers)
-    print(f"upload.gcs_url: {upload_url.json().get('gcs_upload').get('url')}")
-    print("prices successfully uploaded")
+    # check if the upload was successful
+    validate_upload = requests.get(f"{API}/validate-product-prices", headers=headers)
+    if (
+        validate_upload.json().get("first_50_products")
+        and len(validate_upload.json().get("first_50_products")) == 50
+    ):
+        print(f"upload.gcs_url: {validate_upload.json().get('gcs_upload').get('url')}")
+        print("Prices successfully uploaded")
+    else:
+        print("Upload was unsuccessful please try again")
 
 
 def convert_to_json_object(data):
